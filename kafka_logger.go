@@ -82,17 +82,14 @@ func NewKafkaLoggerConfig(brokers []string, topics []string) *KafkaLoggerConfig 
 
 func NewKafkaLogger(config *KafkaLoggerConfig) (*KafkaLogger, error) {
 
-	fmt.Println("NewKafkaLogger Entered")
-
 	kafkaConfig := sarama.NewConfig()
 
 	kafkaConfig.Producer.RequiredAcks = sarama.WaitForLocal       // Only wait for the leader to ack
 	kafkaConfig.Producer.Compression = sarama.CompressionSnappy   // Compress messages
 	kafkaConfig.Producer.Flush.Frequency = 500 * time.Millisecond // Flush batches every 500ms
 
-	producer, err := sarama.NewAsyncProducer([]string{"10.198.32.122:9092"}, kafkaConfig)
+	producer, err := sarama.NewAsyncProducer(config.kafkaBrokers, kafkaConfig)
 	if err != nil {
-		fmt.Println("Failed to create AsyncProducer:", err)
 		return nil, err
 	}
 
@@ -114,28 +111,24 @@ func NewKafkaLogger(config *KafkaLoggerConfig) (*KafkaLogger, error) {
 }
 
 func (l *KafkaLogger) IsInitialized() bool {
-	fmt.Println("KafkaLogger IsInitialized Entered")
 
 	return l.isInitialized
 }
 
 // SetBase will set the gomol.Base this logger is associated with
 func (l *KafkaLogger) SetBase(base *gomol.Base) {
-	fmt.Println("KafkaLogger SetBase Entered")
 
 	l.base = base
 }
 
 // ShutdownLogger shuts down the logger and frees any resources that may be used
 func (l *KafkaLogger) ShutdownLogger() error {
-	fmt.Println("KafkaLogger ShutdownLogger Entered")
 
 	l.isInitialized = false
 	return nil
 }
 
 func (l *KafkaLogger) InitLogger() error {
-	fmt.Println("KafkaLogger InitLogger Entered")
 
 	l.isInitialized = true
 	return nil
@@ -144,10 +137,7 @@ func (l *KafkaLogger) InitLogger() error {
 // Logm sends a JSON log message to the appropriate  kafka broker
 func (l *KafkaLogger) Logm(timestamp time.Time, level gomol.LogLevel, attrs map[string]interface{}, msg string) error {
 
-	fmt.Println("KafkaLogger Logm Entered")
-
 	if !l.isInitialized {
-		fmt.Println("KafkaLogger Logm Logger Not initialized")
 		return errors.New("Kafka logger has not been initialized")
 	}
 
@@ -169,7 +159,6 @@ func (l *KafkaLogger) Logm(timestamp time.Time, level gomol.LogLevel, attrs map[
 	err = l.write(partitionKey, msgBytes)
 
 	if err != nil {
-		fmt.Printf("KafkaLogger Write  returned error %s", err)
 		return err
 	}
 
