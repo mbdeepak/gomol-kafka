@@ -90,7 +90,7 @@ func NewKafkaLogger(config *KafkaLoggerConfig) (*KafkaLogger, error) {
 	kafkaConfig.Producer.Compression = sarama.CompressionSnappy   // Compress messages
 	kafkaConfig.Producer.Flush.Frequency = 500 * time.Millisecond // Flush batches every 500ms
 
-	producer, err := sarama.NewAsyncProducer(config.kafkaBrokers, kafkaConfig)
+	producer, err := sarama.NewAsyncProducer([]string{"10.198.32.122:9092"}, kafkaConfig)
 	if err != nil {
 		fmt.Println("Failed to create AsyncProducer:", err)
 		return nil, err
